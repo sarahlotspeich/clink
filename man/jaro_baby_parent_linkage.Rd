@@ -6,6 +6,7 @@
 \usage{
 jaro_baby_parent_linkage(
   baby_to_match,
+  parents_to_match,
   key_baby,
   key_parent,
   jaro_col_name = "jaro_similarity"
@@ -14,13 +15,13 @@ jaro_baby_parent_linkage(
 \arguments{
 \item{baby_to_match}{data.frame (with one row) for a single baby that includes at least \code{key_baby} as a column.}
 
-\item{key_baby}{variable name to match on from \code{baby_to_match}.}
-
-\item{key_parent}{variable name to match on from \code{parents_to_match}.}
-
 \item{parents_to_match}{data.frame (with multiple rows) for all potential parent matches that includes at least \code{key_parent} as a column.}
 
-\item{name_jaro_col}{variable name for the added column of the Jaro similarity. Default is \code{name_jaro_col = "jaro_similarity"}.}
+\item{key_baby}{string variable name to match on from \code{baby_to_match}.}
+
+\item{key_parent}{string variable name to match on from \code{parents_to_match}.}
+
+\item{jaro_col_name}{string variable name for the added column of the Jaro similarity. Default is \code{jaro_col_name = "jaro_similarity"}.}
 }
 \value{
 A copy of \code{baby_to_match} with added columns for the best-matching parent.
