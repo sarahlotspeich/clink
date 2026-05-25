@@ -1,0 +1,34 @@
+#' Build pool of candidate parent matches based on multiple variables
+#'
+#' @param baby_to_match data.frame (with one row) for a single baby that includes at least \code{key_baby} as a column.
+#' @param parents_to_match data.frame (with multiple rows) for all potential parent matches that includes at least \code{key_parent} as a column.
+#' @param key_baby string variable name(s) to match on from \code{baby_to_match}.
+#' @param key_parent string variable name(s) to match on from \code{parents_to_match}.
+#' @param id_parent string variable name to identify observations in \code{parents_to_match}.
+#' @param jaro_col_name string variable name(s) for the added column of the Jaro similarity corresponding to the keys.
+#' @return A vector containing all unique \code{id_parent} values matching one or more keys. 
+#' @export
+build_candidate_parent_pool = function(baby_to_match, parents_to_match, key_baby, key_parent, id_parent, jaro_col_name) {
+  # Initialize empty vector for matching parent IDs
+  candidate_parent_ids = vector()
+  # Loop through keys 
+  for (k in 1:length(key_baby)) {
+    ## Make sure key is not missing in baby's data 
+    if (!is.na(baby_to_match[key_baby[k]])) {
+      ### Do combined (deterministic --> probabilistic linkage)
+      ### Based on the kth baby/parent keys provided
+      link_on_k = combined_baby_parent_linkage(
+        baby_to_match = baby_to_match,
+        parents_to_match = parents_to_match,
+        key_baby = key_baby[k],
+        key_parent = key_parent[k],
+        jaro_col_name = jaro_col_name[k]
+      )
+      ## If successful, save ID(s) 
+      candidate_parent_ids = append(candidate_parent_ids, 
+                                    link_on_k$match[, id_parent])
+    }
+  }
+  ## Return the vector 
+  return(unique(candidate_parent_ids))
+}
