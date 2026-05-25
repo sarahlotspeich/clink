@@ -17,6 +17,13 @@
 #'   }
 #' @export
 evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_baby, key_parent, id_parent, jaro_col_name, candidate_pool = NULL, aggregate_scores = "mean") {
+  ## Check for missing keys in baby data
+  missing_keys = which(is.na(baby_to_match[key_baby]) | baby_to_match[key_baby] == "")
+  ### And then remove them from all vectors
+  key_baby = key_baby[-missing_keys]
+  key_parent = key_parent[-missing_keys]
+  jaro_col_name = jaro_col_name[-missing_keys]
+
   ## If not supplied...
   ### Build vector of candidate parents from "best" fits per variable
   if (is.null(candidate_pool)) {
