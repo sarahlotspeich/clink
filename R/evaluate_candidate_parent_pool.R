@@ -17,7 +17,7 @@
 #'       the similarity scores per variable and aggregate.}
 #'   }
 #' @export
-evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_baby, key_parent, id_parent, jaro_col_name, candidate_pool = NULL, deterministic_only = NULL,  aggregate_scores = "mean") {
+evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_baby, key_parent, id_parent, jaro_col_name, candidate_pool = NULL, deterministic_only = NULL, aggregate_scores = "mean") {
   ## Check for missing keys in baby data
   missing_keys = which(is.na(baby_to_match[key_baby]) | baby_to_match[key_baby] == "")
   ### And then remove them from all vectors
@@ -27,86 +27,96 @@ evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_b
     jaro_col_name = jaro_col_name[-missing_keys]
   }
 
-  ## If not supplied...
-  ### Build vector of candidate parents from "best" fits per variable
-  if (is.null(candidate_pool)) {
-    candidate_pool = build_candidate_parent_pool(
-      baby_to_match = baby_to_match,
-      parents_to_match = parents_to_match,
-      key_baby = key_baby,
-      key_parent = key_parent,
-      id_parent = id_parent,
-      jaro_col_name = jaro_col_name,
-      deterministic_only = deterministic_only
-    )
-  }
+  ## Make sure there are still non-missing keys left...
+  if (length(key_baby) > 0) {
+    ## If not supplied...
+    ### Build vector of candidate parents from "best" fits per variable
+    if (is.null(candidate_pool)) {
+      candidate_pool = build_candidate_parent_pool(
+        baby_to_match = baby_to_match,
+        parents_to_match = parents_to_match,
+        key_baby = key_baby,
+        key_parent = key_parent,
+        id_parent = id_parent,
+        jaro_col_name = jaro_col_name,
+        deterministic_only = deterministic_only
+      )
+    }
 
-  ## Subset parents_to_match to candidate pool
-  candidates_parents_data = parents_to_match[parents_to_match[, id_parent] %in% candidate_pool, ]
-  ### Keep only columns for the ID and matching keys
-  candidates_parents_data = candidates_parents_data[, c(id_parent, unique(key_parent))]
+    ## Subset parents_to_match to candidate pool
+    candidates_parents_data = parents_to_match[parents_to_match[, id_parent] %in% candidate_pool, ]
+    ### Keep only columns for the ID and matching keys
+    candidates_parents_data = candidates_parents_data[, c(id_parent, unique(key_parent))]
 
-  ## Calculate the similarity score per variable and per candidate parent
-  return_candidates_parents_data = data.frame()
-  for (c in 1:nrow(candidates_parents_data)) {
-    ### Loop through keys
-    candidates_parents_data_c = candidates_parents_data[c, ]
-    for (k in 1:length(key_baby)) {
-      #### Make sure key is not missing in baby's data
-      if (!is.na(baby_to_match[key_baby[k]])) {
-        ##### Do combined (deterministic --> probabilistic linkage)
-        ###### Based on the kth baby/parent keys provided
-        link_on_k = combined_baby_parent_linkage(
-          baby_to_match = baby_to_match,
-          parents_to_match = candidates_parents_data_c,
-          key_baby = key_baby[k],
-          key_parent = key_parent[k],
-          jaro_col_name = jaro_col_name[k],
-          skip_probabilistic = key_baby[k] %in% deterministic_only
-        )
-        if (nrow(link_on_k$match) > 0) {
-          if (link_on_k$type == "deterministic") {
-            link_on_k$match[, jaro_col_name[k]] = 1
+    ## Calculate the similarity score per variable and per candidate parent
+    return_candidates_parents_data = data.frame()
+    for (c in 1:nrow(candidates_parents_data)) {
+      ### Loop through keys
+      candidates_parents_data_c = candidates_parents_data[c, ]
+      for (k in 1:length(key_baby)) {
+        #### Make sure key is not missing in baby's data
+        if (!is.na(baby_to_match[key_baby[k]])) {
+          ##### Do combined (deterministic --> probabilistic linkage)
+          ###### Based on the kth baby/parent keys provided
+          link_on_k = combined_baby_parent_linkage(
+            baby_to_match = baby_to_match,
+            parents_to_match = candidates_parents_data_c,
+            key_baby = key_baby[k],
+            key_parent = key_parent[k],
+            jaro_col_name = jaro_col_name[k],
+            skip_probabilistic = key_baby[k] %in% deterministic_only
+          )
+          if (nrow(link_on_k$match) > 0) {
+            if (link_on_k$type == "deterministic") {
+              link_on_k$match[, jaro_col_name[k]] = 1
+            }
+            ## Append the Jaro score to the end of the candidates' data
+            candidates_parents_data_c = cbind(candidates_parents_data_c,
+                                              link_on_k$match[, jaro_col_name[k]])
+            colnames(candidates_parents_data_c)[ncol(candidates_parents_data_c)] = jaro_col_name[k]
+          } else {
+            ## Append the Jaro score to the end of the candidates' data
+            candidates_parents_data_c = cbind(candidates_parents_data_c,
+                                              NA)
+            colnames(candidates_parents_data_c)[ncol(candidates_parents_data_c)] = jaro_col_name[k]
           }
-          ## Append the Jaro score to the end of the candidates' data
-          candidates_parents_data_c = cbind(candidates_parents_data_c,
-                                            link_on_k$match[, jaro_col_name[k]])
-          colnames(candidates_parents_data_c)[ncol(candidates_parents_data_c)] = jaro_col_name[k]
         }
       }
+      ### Stack/save candidate
+      return_candidates_parents_data = rbind(return_candidates_parents_data,
+                                             candidates_parents_data_c)
     }
-    ### Stack/save candidate
-    return_candidates_parents_data = rbind(return_candidates_parents_data,
-                                           candidates_parents_data_c)
-  }
 
-  ## Calculate aggregate jaro scores per candidate
-  if (aggregate_scores == "mean") {
-    return_candidates_parents_data[, "jaro_aggregate"] = apply(
-      X = return_candidates_parents_data[, jaro_col_name],
-      MARGIN = 1,
-      na.rm = TRUE,
-      FUN = mean,
-      simplify = TRUE)
-  } else if (aggregate_scores == "median") {
-    return_candidates_parents_data[, "jaro_aggregate"] = apply(
-      X = return_candidates_parents_data[, jaro_col_name],
-      MARGIN = 1,
-      FUN = median,
-      na.rm = TRUE,
-      simplify = TRUE)
-  } else if (aggregate_scores == "sum") {
-    return_candidates_parents_data[, "jaro_aggregate"] = apply(
-      X = return_candidates_parents_data[, jaro_col_name],
-      MARGIN = 1,
-      FUN = sum,
-      na.rm = TRUE,
-      simplify = TRUE)
-  }
+    ## Calculate aggregate jaro scores per candidate
+    if (aggregate_scores == "mean") {
+      return_candidates_parents_data[, "jaro_aggregate"] = apply(
+        X = as.matrix(return_candidates_parents_data[, jaro_col_name]),
+        MARGIN = 1,
+        na.rm = TRUE,
+        FUN = mean,
+        simplify = TRUE)
+    } else if (aggregate_scores == "median") {
+      return_candidates_parents_data[, "jaro_aggregate"] = apply(
+        X = as.matrix(return_candidates_parents_data[, jaro_col_name]),
+        MARGIN = 1,
+        FUN = median,
+        na.rm = TRUE,
+        simplify = TRUE)
+    } else if (aggregate_scores == "sum") {
+      return_candidates_parents_data[, "jaro_aggregate"] = apply(
+        X = as.matrix(return_candidates_parents_data[, jaro_col_name]),
+        MARGIN = 1,
+        FUN = sum,
+        na.rm = TRUE,
+        simplify = TRUE)
+    }
 
-  ## Order by jaro_aggregate
-  return_candidates_parents_data = return_candidates_parents_data[order(return_candidates_parents_data[, "jaro_aggregate"],
-                                                                        decreasing = TRUE), ]
+    ## Order by jaro_aggregate
+    return_candidates_parents_data = return_candidates_parents_data[order(return_candidates_parents_data[, "jaro_aggregate"],
+                                                                          decreasing = TRUE), ]
+  } else {
+    return_candidates_parents_data = data.frame()
+  }
 
   ## Return the vector
   return(
