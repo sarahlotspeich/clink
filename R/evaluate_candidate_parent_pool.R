@@ -81,31 +81,27 @@ evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_b
   }
 
   ## Calculate aggregate jaro scores per candidate
-  if (length(jaro_col_name) > 1) {
-    if (aggregate_scores == "mean") {
-      return_candidates_parents_data[, "jaro_aggregate"] = apply(
-        X = return_candidates_parents_data[, jaro_col_name],
-        MARGIN = 1,
-        na.rm = TRUE,
-        FUN = mean,
-        simplify = TRUE)
-    } else if (aggregate_scores == "median") {
-      return_candidates_parents_data[, "jaro_aggregate"] = apply(
-        X = return_candidates_parents_data[, jaro_col_name],
-        MARGIN = 1,
-        FUN = median,
-        na.rm = TRUE,
-        simplify = TRUE)
-    } else if (aggregate_scores == "sum") {
-      return_candidates_parents_data[, "jaro_aggregate"] = apply(
-        X = return_candidates_parents_data[, jaro_col_name],
-        MARGIN = 1,
-        FUN = sum,
-        na.rm = TRUE,
-        simplify = TRUE)
-    }
-  } else {
-    return_candidates_parents_data[, "jaro_aggregate"] = return_candidates_parents_data[, jaro_col_name]
+  if (aggregate_scores == "mean") {
+    return_candidates_parents_data[, "jaro_aggregate"] = apply(
+      X = return_candidates_parents_data[, jaro_col_name],
+      MARGIN = 1,
+      na.rm = TRUE,
+      FUN = mean,
+      simplify = TRUE)
+  } else if (aggregate_scores == "median") {
+    return_candidates_parents_data[, "jaro_aggregate"] = apply(
+      X = return_candidates_parents_data[, jaro_col_name],
+      MARGIN = 1,
+      FUN = median,
+      na.rm = TRUE,
+      simplify = TRUE)
+  } else if (aggregate_scores == "sum") {
+    return_candidates_parents_data[, "jaro_aggregate"] = apply(
+      X = return_candidates_parents_data[, jaro_col_name],
+      MARGIN = 1,
+      FUN = sum,
+      na.rm = TRUE,
+      simplify = TRUE)
   }
 
   ## Order by jaro_aggregate
