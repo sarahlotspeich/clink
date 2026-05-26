@@ -12,6 +12,7 @@ evaluate_candidate_parent_pool(
   id_parent,
   jaro_col_name,
   candidate_pool = NULL,
+  deterministic_only = NULL,
   aggregate_scores = "mean"
 )
 }
@@ -29,6 +30,8 @@ evaluate_candidate_parent_pool(
 \item{jaro_col_name}{string variable name(s) for the added column of the Jaro similarity corresponding to the keys.}
 
 \item{candidate_pool}{optional, vector of \code{id_parent} values returned by the \code{build_candidate_parent_pool} function.}
+
+\item{deterministic_only}{optional, string variable name(s) in \code{key_baby} that should only undergo deterministic linkage.}
 
 \item{aggregate_scores}{string for how scores should be aggregated across keys. Default is \code{aggregate_scores = "mean"}; other options are \code{"median"} and \code{"sum"}.}
 }

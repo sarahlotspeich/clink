@@ -7,6 +7,7 @@
 #' @param id_parent string variable name to identify observations in \code{parents_to_match}.
 #' @param jaro_col_name string variable name(s) for the added column of the Jaro similarity corresponding to the keys.
 #' @param candidate_pool optional, vector of \code{id_parent} values returned by the \code{build_candidate_parent_pool} function.
+#' @param deterministic_only optional, string variable name(s) in \code{key_baby} that should only undergo deterministic linkage.
 #' @param aggregate_scores string for how scores should be aggregated across keys. Default is \code{aggregate_scores = "mean"}; other options are \code{"median"} and \code{"sum"}.
 #' @return A list containing
 #' \describe{
@@ -16,7 +17,7 @@
 #'       the similarity scores per variable and aggregate.}
 #'   }
 #' @export
-evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_baby, key_parent, id_parent, jaro_col_name, candidate_pool = NULL, aggregate_scores = "mean") {
+evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_baby, key_parent, id_parent, jaro_col_name, candidate_pool = NULL, deterministic_only = NULL,  aggregate_scores = "mean") {
   ## Check for missing keys in baby data
   missing_keys = which(is.na(baby_to_match[key_baby]) | baby_to_match[key_baby] == "")
   ### And then remove them from all vectors
@@ -33,7 +34,8 @@ evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_b
       key_baby = key_baby,
       key_parent = key_parent,
       id_parent = id_parent,
-      jaro_col_name = jaro_col_name
+      jaro_col_name = jaro_col_name,
+      deterministic_only = deterministic_only
     )
   }
 

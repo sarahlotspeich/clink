@@ -10,7 +10,8 @@ build_candidate_parent_pool(
   key_baby,
   key_parent,
   id_parent,
-  jaro_col_name
+  jaro_col_name,
+  deterministic_only = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ build_candidate_parent_pool(
 \item{id_parent}{string variable name to identify observations in \code{parents_to_match}.}
 
 \item{jaro_col_name}{string variable name(s) for the added column of the Jaro similarity corresponding to the keys.}
+
+\item{deterministic_only}{optional, string variable name(s) in \code{key_baby} that should only undergo deterministic linkage.}
 }
 \value{
 A vector containing all unique \code{id_parent} values matching one or more keys.
