@@ -55,7 +55,7 @@ evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_b
       candidates_parents_data_c = candidates_parents_data[c, ]
       for (k in 1:length(key_baby)) {
         #### Make sure key is not missing in baby's data
-        if (!is.na(baby_to_match[key_baby[k]])) {
+        if (!all(is.na(baby_to_match[key_baby[k]]))) {
           ##### Do combined (deterministic --> probabilistic linkage)
           ###### Based on the kth baby/parent keys provided
           link_on_k = combined_baby_parent_linkage(

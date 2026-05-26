@@ -13,7 +13,7 @@ build_candidate_parent_pool = function(baby_to_match, parents_to_match, key_baby
   # Initialize empty vector for matching parent IDs
   candidate_parent_ids = vector()
   # Loop through baby's non-missing keys
-  for (k in which(!is.na(baby_to_match[key_baby]) & baby_to_match[key_baby] != "")) {
+  for (k in which(!is.na(baby_to_match[1, key_baby]) & baby_to_match[1, key_baby] != "")) {
     if (key_baby[k] %in% deterministic_only) {
       ### Do combined (deterministic --> probabilistic linkage)
       ### Based on the kth baby/parent keys provided
