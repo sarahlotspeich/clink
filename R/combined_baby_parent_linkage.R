@@ -18,7 +18,7 @@ combined_baby_parent_linkage = function(baby_to_match, parents_to_match, key_bab
   ## Indicator for which type of linkage was done
   type = "deterministic"
   ## Check for the baby key to be missing
-  if (is.na(baby_to_match[key_baby])) {
+  if (all(is.na(baby_to_match[key_baby]))) {
     ## Return
     return(
       list(
