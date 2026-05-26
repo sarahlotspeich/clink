@@ -5,6 +5,7 @@
 #' @param key_baby string variable name to match on from \code{baby_to_match}.
 #' @param key_parent string variable name to match on from \code{parents_to_match}.
 #' @param jaro_col_name if needed, string variable name for the added column of the Jaro similarity. Default is \code{jaro_col_name = "jaro_similarity"}.
+#' @param skip_probabilistic optional, logical argument for whether only deterministic linkage should be tried. Default is \code{skip_probabilistic = FALSE}.
 #' @return A list containing
 #' \describe{
 #'     \item{\code{match}}{A copy of \code{baby_to_match} with added columns for
@@ -13,7 +14,7 @@
 #'       \code{"deterministic"} or \code{"probabilistic"}.}
 #'   }
 #' @export
-combined_baby_parent_linkage = function(baby_to_match, parents_to_match, key_baby, key_parent, jaro_col_name = "jaro_similarity") {
+combined_baby_parent_linkage = function(baby_to_match, parents_to_match, key_baby, key_parent, jaro_col_name = "jaro_similarity", skip_probabilistic = FALSE) {
   ## Indicator for which type of linkage was done
   type = "deterministic"
   ## Check for the baby key to be missing
@@ -34,7 +35,7 @@ combined_baby_parent_linkage = function(baby_to_match, parents_to_match, key_bab
     key_parent = key_parent
   )
   ## If it fails, find the best probabilistic linkage
-  if (nrow(links) == 0) {
+  if (nrow(links) == 0 & !skip_probabilistic) {
     links = jaro_baby_parent_linkage(
       baby_to_match = baby_to_match,
       parents_to_match = parents_to_match,
@@ -43,6 +44,8 @@ combined_baby_parent_linkage = function(baby_to_match, parents_to_match, key_bab
       jaro_col_name = jaro_col_name
     )
     type = "probabilistic"
+  } else if (nrow(links) == 0 & skip_probabilistic) {
+    type = 'deterministic'
   }
   ## Return
   return(

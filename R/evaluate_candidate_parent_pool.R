@@ -61,15 +61,18 @@ evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_b
           parents_to_match = candidates_parents_data_c,
           key_baby = key_baby[k],
           key_parent = key_parent[k],
-          jaro_col_name = jaro_col_name[k]
+          jaro_col_name = jaro_col_name[k],
+          skip_probabilistic = key_baby[k] %in% deterministic_only
         )
-        if (link_on_k$type == "deterministic") {
-          link_on_k$match[, jaro_col_name[k]] = 1
+        if (nrow(link_on_k$match) > 0) {
+          if (link_on_k$type == "deterministic") {
+            link_on_k$match[, jaro_col_name[k]] = 1
+          }
+          ## Append the Jaro score to the end of the candidates' data
+          candidates_parents_data_c = cbind(candidates_parents_data_c,
+                                            link_on_k$match[, jaro_col_name[k]])
+          colnames(candidates_parents_data_c)[ncol(candidates_parents_data_c)] = jaro_col_name[k]
         }
-        ## Append the Jaro score to the end of the candidates' data
-        candidates_parents_data_c = cbind(candidates_parents_data_c,
-                                          link_on_k$match[, jaro_col_name[k]])
-        colnames(candidates_parents_data_c)[ncol(candidates_parents_data_c)] = jaro_col_name[k]
       }
     }
     ### Stack/save candidate
@@ -82,6 +85,7 @@ evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_b
     return_candidates_parents_data[, "jaro_aggregate"] = apply(
       X = return_candidates_parents_data[, jaro_col_name],
       MARGIN = 1,
+      na.rm = TRUE,
       FUN = mean,
       simplify = TRUE)
   } else if (aggregate_scores == "median") {
@@ -89,12 +93,14 @@ evaluate_candidate_parent_pool = function(baby_to_match, parents_to_match, key_b
       X = return_candidates_parents_data[, jaro_col_name],
       MARGIN = 1,
       FUN = median,
+      na.rm = TRUE,
       simplify = TRUE)
   } else if (aggregate_scores == "sum") {
     return_candidates_parents_data[, "jaro_aggregate"] = apply(
       X = return_candidates_parents_data[, jaro_col_name],
       MARGIN = 1,
       FUN = sum,
+      na.rm = TRUE,
       simplify = TRUE)
   }
 
